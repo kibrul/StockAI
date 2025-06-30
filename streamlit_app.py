@@ -6,6 +6,8 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 from ta.trend import sma_indicator
 
+st.title("📈 WeinKulBee DSE Screener")
+
 def get_stock_price(Start_Date,End_Date,Symbol):
     df1 = pd.DataFrame(get_hist_data(Start_Date,End_Date,Symbol))
 
