@@ -46,7 +46,7 @@ watchlist = live_data['symbol'].unique()
 #watchlist = ['CENTRALINS','LOVELLO','MJLBD','BSC','KBPPWBIL','LOVELLO','MALEKSPIN','SEAPEARL','CITYBANK','SQURPHARMA','BRACBANK','FINEFOODS']
 
 #watchlist = ['CENTRALINS']
-print(watchlist)
+st.write(watchlist)
 # 📦 Result container
 results = []
 
@@ -94,7 +94,7 @@ for symbol in watchlist:
 
         # 📋 Append results
         if (is_stage_2 and is_breakout) or (is_stage_2 and is_stockbee) or (is_breakout and is_stockbee):
-         print('Findout:', symbol)   
+         st.write('Findout:', symbol)   
          results.append({
             'symbol': symbol,
             'close': round(pd.to_numeric(latest['close']), 2),
