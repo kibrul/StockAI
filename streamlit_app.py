@@ -109,7 +109,7 @@ for symbol in watchlist:
 
 # 📊 Show results
 df_screen = pd.DataFrame(results)
-df_screen = df_screen.sort_values('WeinKulBee_Triple', ascending=False)
+#df_screen = df_screen.sort_values('WeinKulBee_Triple', ascending=False)
 st.write("\n🎯 WeinKulBee Screener Output:\n")
 st.write(df_screen)
 
