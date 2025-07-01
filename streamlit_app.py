@@ -21,12 +21,10 @@ def get_stock_price(Start_Date,End_Date,Symbol):
         df2['date'] = pd.to_datetime('today').date()
         df3 = df2[['date','symbol', 'close','volume']]
         df4 = pd.concat([df, df3])
+        df4['date'] = pd.to_datetime(df4['date'])
+        df6 = df4.sort_values('date', ascending=False) 
     else:
-        df4 = df
-    
-    df4['date'] = pd.to_datetime(df4['date'])
-    df6 = df4.sort_values('date', ascending=False)    
-    
+        df6 = df
     return df6
   
 Start_Date = dt.datetime.now().date() - timedelta(days=600)
@@ -110,7 +108,7 @@ for symbol in watchlist:
 # 📊 Show results
 df_screen = pd.DataFrame(results)
 #df_screen = df_screen.sort_values('WeinKulBee_Triple', ascending=False)
-st.write("\n🎯 WeinKulBee Screener Output:\n")
+st.write("\n🎯 WeinKulBee-Tani Screener Output:\n")
 st.write(df_screen)
 
-st.write('Hello world! Kibrul')
+st.write('Hello world! WeinKulBee-Tani')
