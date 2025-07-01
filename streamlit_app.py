@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 from ta.trend import sma_indicator
 
-st.title("📈 WeinKulBee-Tani DSE Screener")
+st.title("📈 Tani WeinKulBee DSE Screener")
 
 def get_stock_price(Start_Date,End_Date,Symbol):
     df1 = pd.DataFrame(get_hist_data(Start_Date,End_Date,Symbol))
@@ -25,7 +25,7 @@ def get_stock_price(Start_Date,End_Date,Symbol):
         df4 = df
     
     df4['date'] = pd.to_datetime(df4['date'])
-    df6 = df4.sort_values('date')    
+    df6 = df4.sort_values('date', ascending=False)    
     
     return df6
   
