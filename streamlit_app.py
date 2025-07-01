@@ -10,27 +10,24 @@ st.title("📈 WeinKulBee-Tani DSE Screener")
 
 def get_stock_price(Start_Date,End_Date,Symbol):
     df1 = pd.DataFrame(get_hist_data(Start_Date,End_Date,Symbol))
-
-    # Reset the index date
     df = df1.reset_index()
-
-    # 🔹 Ensure 'close' column exists and is sorted by date
-    #df = df[['date', 'close']].sort_values('date')
-    df.set_index('date', inplace=True)
-
-    df['change'] = round(df1.apply(lambda x: pd.to_numeric(x['close'],downcast='float') -  pd.to_numeric(x['ycp'],downcast='float'), axis=1),2)  
+    df = df[['date','symbol', 'close','volume']]
+    df.set_index('date', inplace=False)
 
     # UTC + 6:00 (Bangladesh time zone) 
     currentHour = datetime.now(tz=timezone(timedelta(hours=6))).strftime("%H")
     if int(currentHour)>=10 and int(currentHour) <=15: #Consider Trading Hours
         df2 = pd.DataFrame(get_current_trade_data(Symbol))
-        df2['date'] = pd.to_datetime(End_Date)
-        df2['open'] = df2['ycp'].values
-        df3 = pd.concat([df, df2])
+        df2['date'] = pd.to_datetime('today').date()
+        df3 = df2[['date','symbol', 'close','volume']]
+        df4 = pd.concat([df, df3])
     else:
-        df3 = df
-        
-    return df3
+        df4 = df
+    
+    df4['date'] = pd.to_datetime(df4['date'])
+    df6 = df4.sort_values('date')    
+    
+    return df6
   
 Start_Date = dt.datetime.now().date() - timedelta(days=600)
 End_Date = dt.datetime.now().date()
