@@ -35,7 +35,7 @@ End_Date = dt.datetime.now().date()
 live_data = get_current_trade_data()
 
 # Optional filter to focus only on active stocks
-live_data = live_data[pd.to_numeric(live_data['volume']) > 10000]
+live_data = live_data[pd.to_numeric(live_data['volume']) > 1000000]
 
 
 # --- Configuration ---# 🔍 Watchlist
