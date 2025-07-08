@@ -40,7 +40,7 @@ live_data = live_data[pd.to_numeric(live_data['volume']) > 1000000]
 
 # --- Configuration ---# 🔍 Watchlist
 symbol_list = live_data['symbol'].unique()  # Update this list with DSE tickers
-print(symbol_list)
+st.write(symbol_list)
 
 # --- Results Container ---
 results = []
