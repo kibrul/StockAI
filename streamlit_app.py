@@ -81,48 +81,47 @@ def is_stockbee_momentum(df):
 
 
 # --- Main Screening Loop ---
-for symbol in symbol_list:
-    for i in range(len(symbol_list)):
-        latest_iteration.text(f'{len(symbol_list) - i} Items left')
-        prg.progress(round((len(symbol_list) / i) + 1))
+# --- Main Screening Loop ---
+for idx, symbol in enumerate(symbol_list):
+    latest_iteration.text(f'{symbol} Items left {len(symbol_list) - (idx + 1)}')
+    prg.progress((idx + 1) / len(symbol_list))
+    try:
+        # df = get_hist_data(symbol, start_date=str(today - datetime.timedelta(days=days_of_history)))
+        # df.dropna(inplace=True)
+        # df.reset_index(drop=True, inplace=True)
+        df3 = get_stock_price(Start_Date, End_Date, symbol)
+        # Reset the index date
+        df = df3.reset_index()
+        df = df[['date', 'symbol', 'close', 'volume']].sort_values('date')
+        df.set_index('date', inplace=True)
 
-        try:
-            # df = get_hist_data(symbol, start_date=str(today - datetime.timedelta(days=days_of_history)))
-            # df.dropna(inplace=True)
-            # df.reset_index(drop=True, inplace=True)
-            df3 = get_stock_price(Start_Date, End_Date, symbol)
-            # Reset the index date
-            df = df3.reset_index()
-            df = df[['date', 'symbol', 'close', 'volume']].sort_values('date')
-            df.set_index('date', inplace=True)
+        if len(df) < 200:
+            continue  # Not enough data for 200dma
 
-            if len(df) < 200:
-                continue  # Not enough data for 200dma
+        in_stage_2 = is_stage_2(df)
+        breakout = is_breakout(df)
+        momentum = is_stockbee_momentum(df)
 
-            in_stage_2 = is_stage_2(df)
-            breakout = is_breakout(df)
-            momentum = is_stockbee_momentum(df)
+        # if in_stage_2 or breakout or momentum:
+        if (in_stage_2 and breakout) or (in_stage_2 and momentum) or (breakout and momentum):
+            results.append({
+                "Symbol": symbol,
+                "Price": df['close'].iloc[-1],
+                "Stage 2": in_stage_2,
+                "Breakout": breakout,
+                "Momentum": momentum
+            })
 
-            # if in_stage_2 or breakout or momentum:
-            if (in_stage_2 and breakout) or (in_stage_2 and momentum) or (breakout and momentum):
-                results.append({
-                    "Symbol": symbol,
-                    "Price": df['close'].iloc[-1],
-                    "Stage 2": in_stage_2,
-                    "Breakout": breakout,
-                    "Momentum": momentum
-                })
-
-            if (in_stage_2 and breakout and  momentum):
-                final_result.append({
-                    "Symbol": symbol,
-                    "Price": df['close'].iloc[-1],
-                    "Stage 2": in_stage_2,
-                    "Breakout": breakout,
-                    "Momentum": momentum
-                })
-        except Exception as e:
-            st.write(f"Error processing {symbol}: {e}")
+        if (in_stage_2 and breakout and  momentum):
+            final_result.append({
+                "Symbol": symbol,
+                "Price": df['close'].iloc[-1],
+                "Stage 2": in_stage_2,
+                "Breakout": breakout,
+                "Momentum": momentum
+            })
+    except Exception as e:
+        st.write(f"Error processing {symbol}: {e}")
 
 # --- Output Result ---
 screener_df = pd.DataFrame(results)
