@@ -84,7 +84,7 @@ def is_stockbee_momentum(df):
 for symbol in symbol_list:
     for i in range(len(symbol_list)):
         latest_iteration.text(f'{len(symbol_list) - i} Items left')
-        prg.progress(round((i / 3.66) + 1))
+        prg.progress(round((len(symbol_list) / i) + 1))
 
         try:
             # df = get_hist_data(symbol, start_date=str(today - datetime.timedelta(days=days_of_history)))
