@@ -6,3 +6,4 @@ numpy
 ta
 streamlit_extras
 streamlit_lottie
+scipy
