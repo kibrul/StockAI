@@ -4,3 +4,4 @@ pandas
 datetime
 numpy
 ta
+streamlit_extras
