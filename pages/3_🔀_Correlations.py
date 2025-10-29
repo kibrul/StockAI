@@ -225,7 +225,7 @@ for i, symbol in enumerate(survivors):
                 # only append if last_price is different from latest close (and not NaN)
                 last_ts = df_sym.index[-1]
                 # Make synthetic row dated "now" to represent latest tick (note: index must be datetime like)
-                now_dt = pd.Timestamp(dt.datetime.now(tz=dt.timezone.utc))
+                now_dt = pd.Timestamp.utcnow().tz_localize(None)
                 # If last recorded close equals last_price (within small tolerance) skip
                 if not np.isclose(float(df_sym['close'].iloc[-1]), float(latest['last_price']), atol=1e-6):
                     row = pd.DataFrame({
