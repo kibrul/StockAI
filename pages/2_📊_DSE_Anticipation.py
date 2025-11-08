@@ -38,7 +38,7 @@ End_Date = dt.datetime.now().date()
 live_data = get_current_trade_data()
 
 # Optional filter to focus only on active stocks
-live_data = live_data[pd.to_numeric(live_data['volume']) > 100000]
+live_data = live_data[pd.to_numeric(live_data['volume']) > 600000]
 
 # --- Configuration ---# 🔍 Watchlist
 symbol_list = live_data['symbol'].unique()  # Update this list with DSE tickers
@@ -65,19 +65,11 @@ for idx, symbol in enumerate(symbol_list):
         if len(df) < 66:
             continue  # Not enough data for 66dma
 
-        """
-        Generate anticipation watchlist for DSE stocks using bdshare.
-        Conditions:
-        1. (avg 9-day close / avg 66-day close) > 1.05
-        2. Today's % price change is between -1% and +1%
-        """
-    
         # Moving averages
         df['close'] = pd.to_numeric(df['close'], errors='coerce')
         avg9 = df['close'].tail(6).mean()
         avg66 = df['close'].tail(66).mean()
-        
-        #print(avg9,avg66)
+
         # Condition 1: Short-term > long-term by 5%
         ratio_condition = (avg9 / avg66) > 1.06
     
@@ -87,8 +79,6 @@ for idx, symbol in enumerate(symbol_list):
         pct_change = ((today_close - yesterday_close) / yesterday_close) * 100
         flat_condition = -1 <= pct_change <= 1
 
-        #print(symbol,avg9, pct_change, today_close)
-        #print(symbol)
         if ratio_condition and flat_condition:
                 anticipation.append({
                     'Symbol': symbol,
