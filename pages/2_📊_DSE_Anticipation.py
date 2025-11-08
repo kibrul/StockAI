@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 init()
 
+st.title("📈 Anticipation-Tani DSE Screener")
 
 def get_stock_price(Start_Date, End_Date, Symbol):
     df1 = pd.DataFrame(get_hist_data(Start_Date, End_Date, Symbol))
@@ -30,7 +31,7 @@ def get_stock_price(Start_Date, End_Date, Symbol):
     return df6
 
 
-Start_Date = dt.datetime.now().date() - timedelta(days=160)
+Start_Date = dt.datetime.now().date() - timedelta(days=300)
 End_Date = dt.datetime.now().date()
 
 # Step 1: Fetch real-time DSE data
@@ -41,12 +42,16 @@ live_data = live_data[pd.to_numeric(live_data['volume']) > 100000]
 
 # --- Configuration ---# 🔍 Watchlist
 symbol_list = live_data['symbol'].unique()  # Update this list with DSE tickers
-print(symbol_list)
+#print(symbol_list)
+st.write(symbol_list)
 anticipation = []
+latest_iteration = st.empty()
+prg = st.progress(0)
 
-for symbol in enumerate(symbol_list):
-    #latest_iteration.text(f'{symbol} Items left {len(symbol_list) - (idx + 1)}')
-    #prg.progress((idx + 1) / len(symbol_list))
+for idx, symbol in enumerate(symbol_list):
+    latest_iteration.text(f'{symbol} Items left {len(symbol_list) - (idx + 1)}')
+    prg.progress((idx + 1) / len(symbol_list))
+    
     try:
         # df = get_hist_data(symbol, start_date=str(today - datetime.timedelta(days=days_of_history)))
         # df.dropna(inplace=True)
@@ -83,7 +88,7 @@ for symbol in enumerate(symbol_list):
         flat_condition = -1 <= pct_change <= 1
 
         #print(symbol,avg9, pct_change, today_close)
-        print(symbol)
+        #print(symbol)
         if ratio_condition and flat_condition:
                 anticipation.append({
                     'Symbol': symbol,
@@ -92,12 +97,12 @@ for symbol in enumerate(symbol_list):
                     'Last Price': today_close
                 })
     except Exception as e:
-        print(f"Error processing {symbol}: {e}")
+         st.write(f"Error processing {symbol}: {e}")
 
 # --- Output Result ---
 watchlist = pd.DataFrame(anticipation)
 if len(watchlist) > 0:
-    print("📊 Anticipation Watchlist (Consolidating after strength):")
-    print(watchlist)
+     st.write("📊 Anticipation Watchlist (Consolidating after strength):")
+     st.write(watchlist)
 else:
-    print("⚠️ No stocks met the filter criteria today.")
+     st.write("⚠️ No stocks met the filter criteria today.")
