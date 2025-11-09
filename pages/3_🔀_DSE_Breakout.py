@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 init()
 
-st.title("📈 Anticipation-Tani DSE Screener")
+st.title("📈 Breakout-Tani DSE Screener")
 
 def get_stock_price(Start_Date, End_Date, Symbol):
     df1 = pd.DataFrame(get_hist_data(Start_Date, End_Date, Symbol))
@@ -42,9 +42,8 @@ live_data = live_data[pd.to_numeric(live_data['volume']) > 600000]
 
 # --- Configuration ---# 🔍 Watchlist
 symbol_list = live_data['symbol'].unique()  # Update this list with DSE tickers
-#print(symbol_list)
-st.write(symbol_list)
-anticipation = []
+
+breakout = []
 latest_iteration = st.empty()
 prg = st.progress(0)
 
@@ -53,9 +52,6 @@ for idx, symbol in enumerate(symbol_list):
     prg.progress((idx + 1) / len(symbol_list))
     
     try:
-        # df = get_hist_data(symbol, start_date=str(today - datetime.timedelta(days=days_of_history)))
-        # df.dropna(inplace=True)
-        # df.reset_index(drop=True, inplace=True)
         df3 = get_stock_price(Start_Date, End_Date, symbol)
         # Reset the index date
         df = df3.reset_index()
@@ -67,6 +63,7 @@ for idx, symbol in enumerate(symbol_list):
 
         # Moving averages
         df['close'] = pd.to_numeric(df['close'], errors='coerce')
+      
         avg9 = df['close'].tail(6).mean()
         avg66 = df['close'].tail(66).mean()
 
@@ -74,13 +71,20 @@ for idx, symbol in enumerate(symbol_list):
         ratio_condition = (avg9 / avg66) > 1.06
     
         # Condition 2: Today's % change between -1% and +1%
-        today_close = pd.to_numeric(df['close'].iloc[-1])
-        yesterday_close = pd.to_numeric(df['close'].iloc[-2])
-        pct_change = ((today_close - yesterday_close) / yesterday_close) * 100
+        db_today_close = pd.to_numeric(df['close'].iloc[-2])
+        db_yesterday_close = pd.to_numeric(df['close'].iloc[-3])
+        pct_change = ((db_today_close - db_yesterday_close) / db_yesterday_close) * 100
         flat_condition = -1 <= pct_change <= 1
 
-        if ratio_condition and flat_condition:
-                anticipation.append({
+        #Bullish 4% Break Out
+        today_close = pd.to_numeric(df['close'].iloc[-1])
+        yesterday_close = pd.to_numeric(df['close'].iloc[-2])
+        bullish4 = (today_close/yesterday_close) >= 1.04
+        
+        
+
+        if bullish4 and ratio_condition and flat_condition:
+                breakout.append({
                     'Symbol': symbol,
                     '9d/66d Ratio': round(avg9 / avg66, 3),
                     '% Change Today': round(pct_change, 2),
@@ -90,21 +94,31 @@ for idx, symbol in enumerate(symbol_list):
          st.write(f"Error processing {symbol}: {e}")
 
 # --- Output Result ---
-watchlist = pd.DataFrame(anticipation)
+watchlist = pd.DataFrame(breakout)
 if len(watchlist) > 0:
-     st.write("📊 Anticipation Watchlist (Consolidating after strength):")
+     st.write("📊 Breakout Watchlist (Breakout After Consolidating):")
      st.write(watchlist)
 else:
      st.write("⚠️ No stocks met the filter criteria today.")
 
 """
-WHAT TO LOOK FOR IN GOOD ANTICIPATION SETUP
-series of narrow range days in pullback/consolidation
-orderly pullback with no 4% b/d during the pullback or consolidation
-low volume pullback
-low volatility during pullback
-linear first leg if looking as continuation setup
-Stock should go up smoothly and not in volatile manner
-3 to 10 days consolidation/pullback
-not up 3 days in a row
+stock should have range expansion on breakout day
+volume on breakout day should be higher
+day before breakout should be narrow range day or negative day
+pre breakout there should not be many 4% breakdowns
+stock should have linearity in prior action
+correction or consolidation should be orderly
+volume during consolidation should be preferably orderly
+stock should close near high on breakout day
+A good momentum burst candidate will have following characters:
+The day prior to range expansion day will be narrow range day or negative day
+The stock will have 3 to 20 days consolidation prior to range expansion day
+The stock will have series of narrow range days prior to breakout
+On breakout day volume is higher than previous day
+On breakout day stock closes at or near its high for the day (preferred)
+Stock is not extended. First or second breakout at start of an up trend is preferred. 
+Stock should have linear and orderly move
+A very volatile stock exhibiting drunken man walk kind moves should be avoided
+Low float below 25 million is good. Below 10 million float leads to explosive moves
+Low priced stocks (below 5 dollar) tend to make very explosive moves of 40% kind in 3 to 5 days. 
 """
