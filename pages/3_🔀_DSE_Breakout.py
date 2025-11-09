@@ -121,4 +121,17 @@ Stock should have linear and orderly move
 A very volatile stock exhibiting drunken man walk kind moves should be avoided
 Low float below 25 million is good. Below 10 million float leads to explosive moves
 Low priced stocks (below 5 dollar) tend to make very explosive moves of 40% kind in 3 to 5 days. 
+
+
+2 not up 2 days in a row Asmall up day before b/o is fine.
+
+L linearity of prior move
+
+Y young trend 1 to 3 rd b/o from consolidation is low risk. As trend ages risk of failure increases.
+
+N narrow range day or negative day pre breakout
+
+C consolidation/pullback is shallow, orderly and compact with narrow range bars and low volume . no more than one 4% b/d in consolidation
+
+H close near high of the day
 """
