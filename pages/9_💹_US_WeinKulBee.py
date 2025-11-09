@@ -38,15 +38,15 @@ MIN_VOLUME_FOR_ACTIVE = 100000  # optional filter to skip extremely illiquid nam
 # Simple UI controls
 st.sidebar.markdown("## Settings")
 st.sidebar.write(f"History length (trading days): **{TRADING_DAYS}**")
-st.sidebar.write("Universe: **S&P 500 (scraped from Wikipedia)**")
+st.sidebar.write("Universe: **S&P 500**")
 run_btn = st.sidebar.button("Run WeinKulBee Screener")
 
-st.markdown("""
-This screener:
-- downloads historical **daily** data for S&P 500 tickers (300 trading days),
-- computes Stage-2 (200-day MA), 50-day breakout, and StockBee momentum (≥4% move + volume spike),
-- shows all matches and the strongest matches (all three criteria).
-""")
+#st.markdown("""
+#This screener:
+#- downloads historical **daily** data for S&P 500 tickers (300 trading days),
+#- computes Stage-2 (200-day MA), 50-day breakout, and StockBee momentum (≥4% move + volume spike),
+#- shows all matches and the strongest matches (all three criteria).
+#""")
 
 #
 # Helper: get S&P500 tickers from Wikipedia
@@ -216,3 +216,4 @@ if not fscreener_df.empty:
 st.success("Scan complete.")
 status_text.empty()
 main_progress.empty()
+
