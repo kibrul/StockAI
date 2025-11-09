@@ -82,8 +82,8 @@ for idx, symbol in enumerate(symbol_list):
         bullish4 = (today_close/yesterday_close) >= 1.04
         
         
-
-        if bullish4 and ratio_condition and flat_condition:
+        #if bullish4 and ratio_condition and flat_condition:
+        if bullish4 and ratio_condition :
                 breakout.append({
                     'Symbol': symbol,
                     '9d/66d Ratio': round(avg9 / avg66, 3),
