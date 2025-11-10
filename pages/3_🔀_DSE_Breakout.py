@@ -101,37 +101,4 @@ if len(watchlist) > 0:
 else:
      st.write("⚠️ No stocks met the filter criteria today.")
 
-"""
-stock should have range expansion on breakout day
-volume on breakout day should be higher
-day before breakout should be narrow range day or negative day
-pre breakout there should not be many 4% breakdowns
-stock should have linearity in prior action
-correction or consolidation should be orderly
-volume during consolidation should be preferably orderly
-stock should close near high on breakout day
-A good momentum burst candidate will have following characters:
-The day prior to range expansion day will be narrow range day or negative day
-The stock will have 3 to 20 days consolidation prior to range expansion day
-The stock will have series of narrow range days prior to breakout
-On breakout day volume is higher than previous day
-On breakout day stock closes at or near its high for the day (preferred)
-Stock is not extended. First or second breakout at start of an up trend is preferred. 
-Stock should have linear and orderly move
-A very volatile stock exhibiting drunken man walk kind moves should be avoided
-Low float below 25 million is good. Below 10 million float leads to explosive moves
-Low priced stocks (below 5 dollar) tend to make very explosive moves of 40% kind in 3 to 5 days. 
 
-
-2 not up 2 days in a row Asmall up day before b/o is fine.
-
-L linearity of prior move
-
-Y young trend 1 to 3 rd b/o from consolidation is low risk. As trend ages risk of failure increases.
-
-N narrow range day or negative day pre breakout
-
-C consolidation/pullback is shallow, orderly and compact with narrow range bars and low volume . no more than one 4% b/d in consolidation
-
-H close near high of the day
-"""
