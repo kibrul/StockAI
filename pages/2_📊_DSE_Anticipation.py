@@ -97,14 +97,4 @@ if len(watchlist) > 0:
 else:
      st.write("⚠️ No stocks met the filter criteria today.")
 
-"""
-WHAT TO LOOK FOR IN GOOD ANTICIPATION SETUP
-series of narrow range days in pullback/consolidation
-orderly pullback with no 4% b/d during the pullback or consolidation
-low volume pullback
-low volatility during pullback
-linear first leg if looking as continuation setup
-Stock should go up smoothly and not in volatile manner
-3 to 10 days consolidation/pullback
-not up 3 days in a row
-"""
+
