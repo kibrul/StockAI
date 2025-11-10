@@ -9,14 +9,20 @@ from ta.trend import sma_indicator
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
-import yfinance as yf
-import requests
 
 from utils import init
 init()
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import datetime as dt
+import requests
+from datetime import datetime, timezone, date, timedelta
+
 st.set_page_config(page_title="📈 Breakout-Tani US Screener", layout="wide")
-st.title("📈 Breakout-Tani US Screener (yfinance, EOD)")
+st.title("📈 Breakout-Tani US Screener (yfinance, Live)")
 
 #
 # CONFIG
@@ -29,6 +35,11 @@ RESISTANCE_LOOKBACK = 50  # 50-day resistance for breakout
 VOLUME_MA_WINDOW = 50  # 50-day volume MA for momentum
 MIN_VOLUME_FOR_ACTIVE = 100000  # optional filter to skip extremely illiquid names
 
+# 1. Set the end date for HISTORICAL data to TODAY's date.
+#    yfinance will typically fetch data UP TO (but not including) this date,
+#    which means we get data up to yesterday's close.
+end_date_hist = date.today()  #- timedelta(days=3)
+
 # Simple UI controls
 st.sidebar.markdown("## Settings")
 st.sidebar.write(f"History length (trading days): **{TRADING_DAYS}**")
@@ -36,71 +47,56 @@ st.sidebar.write("Universe: **S&P 500**")
 run_btn = st.sidebar.button("Run BreakOut Screener")
 
 
-
-
-import yfinance as yf
-
-def get_reliable_latest_price_and_volume(ticker):
+def get_reliable_latest_quote_data(ticker):
     """
-    Fetches the most reliable latest price and volume data for a given ticker,
-    using fallback mechanisms for price.
+    Fetches the most reliable latest price, volume, and trade time
+    data for a given ticker, including necessary fallbacks.
     """
     stock = yf.Ticker(ticker)
     info = stock.info
-    
-    # --- Price Retrieval (Same Robust Logic) ---
-    
-    # 1. Try the most reliable field for the latest price
+
+    # --- Price Retrieval ---
     price = info.get('regularMarketPrice')
-    
-    # 2. Fallback to 'currentPrice'
     if price is None:
         price = info.get('currentPrice')
-        
-    # 3. If market is closed, check for pre/post-market price
     if price is None and info.get('marketState') != 'REGULAR':
         price = info.get('preMarketPrice') or info.get('postMarketPrice')
-    
-    # 4. Final fallback to the previous day's close
     if price is None:
         price = info.get('previousClose')
 
     # --- Volume Retrieval ---
-    
-    # 1. Try the most reliable field for the latest volume (current session)
     volume = info.get('regularMarketVolume')
-    
-    # 2. Fallback to the 'volume' field (often the same, but good for redundancy)
     if volume is None:
         volume = info.get('volume')
-        
-    # 3. Final fallback to the previous day's volume if current volume is None
-    #    This ensures a volume figure is returned, even if stale.
     if volume is None:
-        volume = info.get('previousVolume')
-    
-    # Convert volume to integer if it's not None
+        # We need the previous day's close for the 'Open' field of today's row
+        prev_close = info.get('previousClose')
     if volume is not None:
         volume = int(volume)
-        
-    # --- Return Results ---
-    
-    # Return a dictionary for easy access
+
+    # --- Date/Time Retrieval ---
+    # timestamp = info.get('regularMarketTime') or info.get('exchangeDataDelayedBy')
+
+    # date_time_str = None
+    # if timestamp is not None and isinstance(timestamp, (int, float)):
+    #    # Convert to datetime object (UTC)
+    #    dt_object = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    # We only need the date for the index of the DataFrame
+    #     trade_date = dt_object.date()
+    # else:
+    # Fallback to today's date if timestamp is unavailable
+    trade_date = date.today()
+
+    # --- Return Results Dictionary (Aligned for DataFrame) ---
     return {
-        'Price': price,
+        'DateIndex': pd.to_datetime(trade_date),  # Use this for DataFrame index
+        'Open': info.get('regularMarketOpen', price),  # Use today's open, fallback to latest price
+        'High': info.get('regularMarketDayHigh', price),  # Use day high, fallback to latest price
+        'Low': info.get('regularMarketDayLow', price),  # Use day low, fallback to latest price
+        'Close': price,
+        'Adj Close': price,  # Assume Adj Close = Close for the current, live bar
         'Volume': volume
     }
-
-# Example usage:
-#latest_qcom_data = get_reliable_latest_price_and_volume('QCOM')
-
-#print(f"Latest QCOM Data:")
-#print(f"  Price: ${latest_qcom_data['Price']:.2f}")
-#print(f"  Volume: {latest_qcom_data['Volume']:,}")
-
-
-
-
 
 
 #
@@ -139,6 +135,22 @@ with st.spinner("Downloading historical data (this may take ~20-60s)..."):
     # Use yf.download for many tickers — it returns a multi-level column dataframe
     try:
         raw = yf.download(tickers=tickers, period=period_str, interval="1d", group_by='ticker', threads=True, progress=False)
+
+        # 2. Download Historical Data (now correctly using the 'end' parameter)
+        #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        #    raw_hist = yf.download(
+        #        tickers=[TICKER],
+        #        period=HISTORY_PERIOD,
+        #        interval="1d",
+        #        # --- FIX IS HERE ---
+        #        end=end_date_hist,
+        #        # -------------------
+        #        group_by='ticker',
+        #        threads=True,
+        #        progress=False
+        #    ).droplevel(0, axis=1)
+
+
     except Exception as e:
         st.error(f"yfinance download error: {e}")
         st.stop()
@@ -173,10 +185,27 @@ for idx, symbol in enumerate(tickers):
         if df_sym.empty:
             continue
 
-        # Ensure columns named 'Close' and 'Volume' exist (yfinance standard)
-        df_sym = df_sym[['Close', 'Volume']].rename(columns={'Close': 'close', 'Volume': 'volume'})
-        df_sym = df_sym.sort_index()  # ascending by date
+        # 3. Get Today's Live Quote Data (as before)
+        live_quote_dict = get_reliable_latest_quote_data(symbol)
+        #print(live_quote_dict)
 
+        # 4. Convert Live Quote to DataFrame Row and Align Index
+        df_live_row = pd.DataFrame(
+            [live_quote_dict],
+            index=[live_quote_dict['DateIndex']]
+        ).drop(columns=['DateIndex'])
+
+        # Ensure columns align perfectly
+        df_live_row = df_live_row.reindex(columns=df_sym.columns)
+
+        # 5. Concatenate the two DataFrames
+        df_final = pd.concat([df_sym, df_live_row], axis=0)
+
+
+        # Ensure columns named 'Close' and 'Volume' exist (yfinance standard)
+        df_sym = df_final[['Close', 'Volume']].rename(columns={'Close': 'close', 'Volume': 'volume'})
+        df_sym = df_sym.sort_index()  # ascending by date
+        #print(df_sym.tail(3))
         # Basic liquidity filter (optional)
         if df_sym['volume'].iloc[-1] < MIN_VOLUME_FOR_ACTIVE:
             # Skip extremely illiquid names to speed up results; comment this out if you want all symbols
@@ -190,7 +219,11 @@ for idx, symbol in enumerate(tickers):
         if len(df_sym) < MIN_DATA_POINTS_FOR_200DMA:
             continue
 
-        st.write(df_sym)
+
+
+
+
+        #st.write(df_sym)
         close = df_sym['close'].astype(float)
         volume = df_sym['volume'].astype(float)
 
