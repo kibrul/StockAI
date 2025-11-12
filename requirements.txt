@@ -9,4 +9,3 @@ streamlit_lottie
 scipy
 scikit-learn
 yfinance
-io
