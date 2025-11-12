@@ -9,6 +9,7 @@ from ta.trend import sma_indicator
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+from io import StringIO
 
 from utils import init
 init()
@@ -57,11 +58,18 @@ def get_sp500_tickers():
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
+    
+    # 1. Fetch HTML content
     r = requests.get(url, headers=headers)
     r.raise_for_status()  # raise if still blocked
 
-    tables = pd.read_html(r.text)
-    df = tables[0]
+    # 2. FIX: Wrap the HTML string in StringIO object
+    html_buffer = StringIO(r.text)
+
+    # 3. Read HTML tables from the StringIO buffer
+    tables = pd.read_html(html_buffer) # <-- CHANGED: passing html_buffer instead of r.text
+    
+    df = tables[1]
     tickers = df['Symbol'].str.replace('.', '-', regex=False).tolist()
     return tickers, df
 
@@ -216,4 +224,5 @@ if not fscreener_df.empty:
 st.success("Scan complete.")
 status_text.empty()
 main_progress.empty()
+
 
