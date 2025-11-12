@@ -200,11 +200,10 @@ for idx, symbol in enumerate(tickers):
         st.write(f"Error processing {symbol}: {e}")
         continue
         
-if not screener_df.empty:
-    # Convert to DataFrame and display
-    screener_df = pd.DataFrame(results).sort_values(by=['Stage 2', 'Breakout', 'Momentum', 'Price'], ascending=[False, False, False, False])
-if not fscreener_df.empty:
-    fscreener_df = pd.DataFrame(final_result).sort_values(by=['Price'], ascending=False)
+
+# Convert to DataFrame and display
+screener_df = pd.DataFrame(results)  #.sort_values(by=['Stage 2', 'Breakout', 'Momentum', 'Price'], ascending=[False, False, False, False])
+fscreener_df = pd.DataFrame(final_result)  #.sort_values(by=['Price'], ascending=False)
 
 st.subheader("🎯 WeinKulBee - All Matches (any 2 of 3 criteria)")
 st.write(f"Found {len(screener_df)} matches (any 2 of 3 criteria).")
@@ -226,6 +225,7 @@ if not fscreener_df.empty:
 st.success("Scan complete.")
 status_text.empty()
 main_progress.empty()
+
 
 
 
