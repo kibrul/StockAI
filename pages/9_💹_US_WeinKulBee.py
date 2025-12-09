@@ -56,20 +56,26 @@ run_btn = st.sidebar.button("Run WeinKulBee Screener")
 def get_sp500_tickers():
     url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0"
     }
-    
-    # 1. Fetch HTML content
+
     r = requests.get(url, headers=headers)
-    r.raise_for_status()  # raise if still blocked
+    r.raise_for_status()
 
-    # 2. FIX: Wrap the HTML string in StringIO object
     html_buffer = StringIO(r.text)
+    tables = pd.read_html(html_buffer)
 
-    # 3. Read HTML tables from the StringIO buffer
-    tables = pd.read_html(html_buffer) # <-- CHANGED: passing html_buffer instead of r.text
-    
-    df = tables[1]
+    # Find table containing the Symbol column
+    df = None
+    for t in tables:
+        if 'Symbol' in t.columns:
+            df = t
+            break
+
+    if df is None:
+        raise Exception("No table found containing a 'Symbol' column. Wikipedia format changed.")
+
+    # Clean tickers
     tickers = df['Symbol'].str.replace('.', '-', regex=False).tolist()
     return tickers, df
 
@@ -225,6 +231,7 @@ if not fscreener_df.empty:
 st.success("Scan complete.")
 status_text.empty()
 main_progress.empty()
+
 
 
 
